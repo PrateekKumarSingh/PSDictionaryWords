@@ -1,6 +1,3 @@
-﻿. .\Set-RandomBackground.ps1
-. .\ShutdownTimer.ps1
-
 Function Get-WordFromDictionary 
 {
     [Cmdletbinding()]
@@ -71,8 +68,5 @@ Function Get-WordFromDictionary
     Write-Host "Alphabet : $Alpha is complete" -ForegroundColor Yellow
 }
 
-Set-RandomBackground -DanceFloorMode
-
-#ShutdownTimer -mins 5
 
 

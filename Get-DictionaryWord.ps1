@@ -1,4 +1,4 @@
-Function Get-WordFromDictionary 
+Function Get-DictionaryWord
 {
     [Cmdletbinding()]
     Param(
@@ -7,6 +7,8 @@ Function Get-WordFromDictionary
 
     $Results = @()
     $i = 1
+    $StartingAlphabet = $StartingAlphabet.toLower()
+
 
     While($true)
     {
@@ -22,10 +24,12 @@ Function Get-WordFromDictionary
 
         $URL = "http://learnersdictionary.com/3000-words/alpha/$URLSubString"
 
-        Write-Verbose "Harvesting data on Page-$i of $URL for Alphabet : $StartingAlphabet"
-        $WebRequest = Invoke-WebRequest $URL
-        $Innertext = ($WebRequest.parsedhtml.all |where{$_.nodename -eq 'ul' -and $_.classname -eq 'a_words'}).innertext 
+        Write-Verbose "Harvesting data from Page-$i of $URL for Alphabet : $StartingAlphabet"
         
+        $WebRequest = Invoke-WebRequest $URL
+        
+        Write-Verbose "Converting raw data into structured data [PSObjects]"
+        $Innertext = ($WebRequest.parsedhtml.all |where{$_.nodename -eq 'ul' -and $_.classname -eq 'a_words'}).innertext 
         $InnerText = $Innertext -split [environment]::NewLine | ?{$_}
 
         $Item = $Innertext | ForEach-Object{
@@ -52,6 +56,8 @@ Function Get-WordFromDictionary
             $Results = $Results + $Item
             $i = $i + 1
 
+            # When Pagination ends on a page (no next button) break the Loop
+            # Output the results
             If(-not ($WebRequest.ParsedHtml.all | where {$_.nodename -eq 'a' -and $_.classname -eq 'button next'}))
             {
                 break
@@ -60,13 +66,10 @@ Function Get-WordFromDictionary
     $Results
 } 
 
-[char[]]"abcdefghijklmnopqrstuvwxyz" | ForEach-Object {
+[char[]]"vwxyz" | ForEach-Object {
     
     $Alpha = $_
-    Get-WordFromDictionary $Alpha -Verbose | ConvertTo-Json | `
-    Out-File "C:\Data\Powershell\Scripts\DictionaryAlphabetJSON\$Alpha.json"
+    Get-DictionaryWord $Alpha -Verbose | ConvertTo-Json | `
+    Out-File ".\DictionaryAlphabetJSON\$Alpha.json"
     Write-Host "Alphabet : $Alpha is complete" -ForegroundColor Yellow
 }
-
-
-
